@@ -152,7 +152,7 @@ EPOCHS = 1000
 
 lr = 1e-3
 val_period = 20 # 每20个epoch打印一次
-
+savePath = './modelSave/net.pt'
 
 rnn = RNN(INPUT_SIZE,
           HIDDEN_SIZE,
@@ -207,6 +207,7 @@ def predict(model, name, n_predictons=3):
     prediction = [(ds.labels[topi[0][index].item()], topv[0][index].item()) for index in range(n_predictons)]
     return prediction
 
+# ------------------- 训练 ---------------------- #
 loss_all = []
 bast_acc = 0 # 用以保存最佳的模型
 rnn.train()
@@ -235,9 +236,18 @@ for epoch in tqdm(range(EPOCHS)):
     if (epoch + 1) % val_period == 0:
         acc = cal_accuracy(rnn, val_dl)
         if acc > bast_acc:
-            torch.save(rnn.state_dict(), './modelSave/net.pt')
+            torch.save(rnn.state_dict(), savePath)
             best_acc = acc
         name, label = iter(test_dl).next() # 在测试集中选一个名字，进行预测
         predictions = predict(rnn, name[0])[0]
         print('epoch %d, acc %f, time %.2f sec, %s(%s) -> %s(%f)'
               % (epoch, acc, time.time() - start, name, label[0], predictions[0], predictions[1]))
+
+
+# ------------------- 测试集 测试 ---------------------- #
+rnn = RNN(INPUT_SIZE,
+          HIDDEN_SIZE,
+          OUTPUT_SIZE).to(DEVICE)
+rnn.load_state_dict(torch.load(savePath))
+acc = cal_accuracy(rnn, test_dl)
+print('test-acc: %f'%(acc, ))
