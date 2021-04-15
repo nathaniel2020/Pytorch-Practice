@@ -99,7 +99,7 @@ class RNN(nn.Module):
         self.i2o = nn.Linear(input_size + hidden_size, output_size)
         self.i2h = nn.Linear(input_size + hidden_size, hidden_size)
 
-        self.softmax = nn.LogSoftmax()
+        self.softmax = nn.Softmax(dim=1)
 
     # def forward(self, input, hidden):
     #     # 每次只有一个单词，故而batch_size=1
@@ -118,7 +118,6 @@ class RNN(nn.Module):
             combined = torch.cat((input[step].float(), hidden), dim=1) # tensor (batch_size=1, input_size + hidden_size)
             output = self.i2o(combined) # (batch_size=1, output_size)
             hidden = self.i2h(combined) # (batch_size=1, hidden_size)
-        output = self.softmax(output)
         return output, hidden
 
     def init_hidden(self):
@@ -145,14 +144,14 @@ test_dl = DataLoader(test_ds, batch_size=batch_size, shuffle=True, num_workers=0
 
 # ------------------- 定义参数 ---------------------- #
 
-DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+DEVICE = torch.device('cuda:3' if torch.cuda.is_available() else 'cpu')
 INPUT_SIZE = ds.n_letters # 字母总数
 HIDDEN_SIZE = 256
 OUTPUT_SIZE = len(ds.labels) # 类别数
 EPOCHS = 1000
 
 lr = 1e-3
-val_period = 20 # 每20个epoch打印一次
+val_period = 1 # 每20个epoch打印一次
 savePath = './modelSave/net.pt'
 
 rnn = RNN(INPUT_SIZE,
@@ -242,7 +241,7 @@ for epoch in tqdm(range(EPOCHS)):
         name, label = iter(test_dl).next() # 在测试集中选一个名字，进行预测
         predictions = predict(rnn, name[0])[0]
         print('epoch %d, acc %f, time %.2f sec, %s(%s) -> %s(%f)'
-              % (epoch, acc, time.time() - start, name, label[0], predictions[0], predictions[1]))
+              % (epoch, acc, time.time() - start, name[0], label[0], predictions[0], predictions[1]))
 
 
 # ------------------- 测试集 测试 ---------------------- #
