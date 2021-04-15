@@ -99,7 +99,7 @@ class RNN(nn.Module):
         self.i2o = nn.Linear(input_size + hidden_size, output_size)
         self.i2h = nn.Linear(input_size + hidden_size, hidden_size)
 
-        # self.softMax = nn.Softmax()
+        self.softmax = nn.LogSoftmax()
 
     # def forward(self, input, hidden):
     #     # 每次只有一个单词，故而batch_size=1
@@ -118,6 +118,7 @@ class RNN(nn.Module):
             combined = torch.cat((input[step].float(), hidden), dim=1) # tensor (batch_size=1, input_size + hidden_size)
             output = self.i2o(combined) # (batch_size=1, output_size)
             hidden = self.i2h(combined) # (batch_size=1, hidden_size)
+        output = self.softmax(output)
         return output, hidden
 
     def init_hidden(self):
