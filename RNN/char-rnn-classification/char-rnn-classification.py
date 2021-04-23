@@ -22,6 +22,8 @@ import time
 import unicodedata
 import string
 from pathlib import Path
+from torch.utils.tensorboard import SummaryWriter
+
 
 class NameDataset(Dataset):
     def __init__(self, filePath):
@@ -163,7 +165,7 @@ optim = torch.optim.Adam(rnn.parameters(), lr=lr)
 
 
 # ------------------- 计算准确度，预测 ---------------------- #
-def cal_accuracy(model, val_dl):
+def cal_accuracy(model, dl):
     '''
     计算误差
     :param model: 模型
@@ -173,7 +175,7 @@ def cal_accuracy(model, val_dl):
     model.eval()
     acc = 0
     num = 0
-    for X, Y in val_dl:
+    for X, Y in dl:
         # X, Y: tuple, len=1
         X = X[0]
         Y = Y[0]
